@@ -118,23 +118,41 @@ function pn_flower_tree_shortcode($atts) {
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 	<script>
 		(function($) {
+
+			function calcOffsetAnchorFrom(anchorEle, targetEle) {
+				var anchorOffset = anchorEle.offset();
+				var elementOffset = targetEle.offset();
+
+				var offsetX = elementOffset.left - anchorOffset.left;
+				var offsetY = elementOffset.top - anchorOffset.top;
+
+				return {
+						left : offsetX,
+						top : offsetY
+					};
+			}
 			class FlowerCanvas {
 				// constructor
 				constructor() {
+					const flowerTree = $(".flower-tree-menu");
                     this.canvas = document.createElement('canvas');
 					this.canvas.classList.add('flower-relational');
 					this.canvas.style.position = 'absolute';
-					this.canvas.style.left = '0';
-					this.canvas.style.top = '0';
-					this.canvas.width = $(document).width();
-					this.canvas.height = $(document).height();
-					document.body.appendChild(this.canvas);
+					this.canvas.style.left = flowerTree.offset().left + 'px';
+					this.canvas.style.top = flowerTree.offset().top + 'px';
+					this.canvas.width = flowerTree.width();
+					this.canvas.height = flowerTree.height();
+					flowerTree.append(this.canvas);
                 }
 
 				drawLineBetweenElements (startElement, endElement) {
 					// Get the offset of the start and end elements
-					const startOffset = startElement.offset();
-					const endOffset = endElement.offset();
+					const anchorEle = $(".flower-tree-menu");
+					const startOffset = calcOffsetAnchorFrom(anchorEle, startElement);
+					const endOffset = calcOffsetAnchorFrom(anchorEle, endElement);
+
+					// const startOffset = startElement.offset();
+					// const endOffset = endElement.offset();
 
 					// Calculate the start and end points
 					const startPoint = {
@@ -184,15 +202,16 @@ function pn_flower_tree_shortcode($atts) {
 				}
 
 				redrawFlowerRelationship() {
-					document.body.removeChild(this.canvas);
-					this.canvas = document.createElement('canvas');
+					this.canvas.remove();
+					const flowerTree = $(".flower-tree-menu");
+                    this.canvas = document.createElement('canvas');
 					this.canvas.classList.add('flower-relational');
 					this.canvas.style.position = 'absolute';
-					this.canvas.style.left = '0';
-					this.canvas.style.top = '0';
-					this.canvas.width = $(document).width();
-					this.canvas.height = $(document).height();
-					document.body.appendChild(this.canvas);
+					this.canvas.style.left = flowerTree.offset().left + 'px';
+					this.canvas.style.top = flowerTree.offset().top + 'px';
+					this.canvas.width = flowerTree.width();
+					this.canvas.height = flowerTree.height();
+					$(".flower-tree-menu").append(this.canvas);
                     this.drawFlowerRelationship();
 				}
 			}
@@ -200,7 +219,9 @@ function pn_flower_tree_shortcode($atts) {
 
 			$(document).ready(function() {
 				const flowerCanvas = new FlowerCanvas();
-				flowerCanvas.redrawFlowerRelationship();
+				setTimeout(function() {
+					flowerCanvas.redrawFlowerRelationship();
+				}, 1000);
 
 				$(".flower-name").click(function (e) {
 					e.stopPropagation();
@@ -223,15 +244,6 @@ function pn_flower_tree_shortcode($atts) {
 	echo '<ul id="menu-pha-he-hoa" class="flower-tree-menu">';
 	render_flower_tree_ancestors($flower_data);
 	echo '</ul>';
-
-	// wp_nav_menu(
-    //     array(
-	// 		'theme_location' => 'flower-tree-menu',
-    //         'menu_class' => 'flower-tree-menu',
-    //         'container' => true,
-    //         'fallback_cb' => 'pn_fallback_cb',
-    //     )
-    // );
 
 	return ob_get_clean();
 }
@@ -324,30 +336,33 @@ function register_flower_post_type() {
 }
 add_action( 'init', 'register_flower_post_type' );
 
-
-/**
- *  Menu items - Add "Custom sub-menu" in menu item render output
- *  if menu item has class "menu-item-target"
- */
-function wpdocs_flower_tree_item_custom_output( $item_output, $item, $depth, $args ) {
-	$has_children = in_array("menu-item-has-children" ,$item->classes);
-
-    if ( isset($args->theme_location) && $args->theme_location == "flower-tree-menu" ) {
-		ob_start(); ?>
-
-		<div class="flower-start-point"></div>
-		<div class="flower-thumbnail"><?= get_the_post_thumbnail( $item->object_id, [ 100, 100] ) ?></div>
-		<div class="flower-name">
-			<a href="<?= get_the_permalink($item->object_id); ?>"><?= $item->title; ?> </a>
-			<?php echo $has_children ? '<span class="flower-slider dashicons dashicons-arrow-down-alt2"></span>' : ""; ?>
-		</div>
-		<div class="flower-end-point"></div>
-		<div class="flower-spacing"></div>
-
-		<?php
-		$item_output .= ob_get_clean();
+// Override the default WordPress template for the single flower
+function load_flower_single_template($template) {
+    if (is_singular('flower')) {
+        // Path to your template file inside the plugin folder
+        $template = plugin_dir_path(__FILE__) . 'templates/single-flower.php';
     }
-
-    return $item_output;
+    return $template;
 }
-add_filter( 'walker_nav_menu_start_el', 'wpdocs_flower_tree_item_custom_output', 10, 4 );
+add_filter('template_include', 'load_flower_single_template');
+
+
+function flower_plugin_get_header() {
+    $header_path = get_stylesheet_directory() . '/header.php';
+
+    if (file_exists($header_path)) {
+        include($header_path);
+    } else {
+        echo 'no header found';
+    }
+}
+
+function flower_plugin_get_footer() {
+    $footer_path = get_stylesheet_directory() . '/footer.php';
+
+    if (file_exists($footer_path)) {
+        include($footer_path);
+    } else {
+        echo 'no footer found';
+    }
+}
