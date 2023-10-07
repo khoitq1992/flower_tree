@@ -33,7 +33,16 @@ add_action( 'init', 'flower_tree_custom_new_menu' );
 
 
 // Add shortcode that displays Flower Tree menu
-function pn_flower_tree_shortcode() {
+function pn_flower_tree_shortcode($atts) {
+	// extract attributes
+	extract( shortcode_atts( array(
+        'id' => null,
+    ), $atts ) );
+
+	if (empty($id)) {
+		return "";
+	}
+
     ob_start(); ?>
 
 	<style>
@@ -209,20 +218,52 @@ function pn_flower_tree_shortcode() {
 
 	<?php
 
-	// render
-	wp_nav_menu(
-        array(
-			'theme_location' => 'flower-tree-menu',
-            'menu_class' => 'flower-tree-menu',
-            'container' => true,
-            'fallback_cb' => 'pn_fallback_cb',
-        )
-    );
+	// Render tree ancestors
+	$flower_data = get_post($id);
+	echo '<ul id="menu-pha-he-hoa" class="flower-tree-menu">';
+	render_flower_tree_ancestors($flower_data);
+	echo '</ul>';
+
+	// wp_nav_menu(
+    //     array(
+	// 		'theme_location' => 'flower-tree-menu',
+    //         'menu_class' => 'flower-tree-menu',
+    //         'container' => true,
+    //         'fallback_cb' => 'pn_fallback_cb',
+    //     )
+    // );
 
 	return ob_get_clean();
 }
 add_shortcode( 'flower_tree_display', 'pn_flower_tree_shortcode' );
 
+
+function render_flower_tree_ancestors($flower_data) {
+	$parents = get_field("parents", $flower_data->ID); 
+	$has_parents = empty($parents) ? false : true;
+	?>
+	<li class="menu-item">
+		<div class="flower-start-point"></div>
+		<div class="flower-thumbnail"><?= get_the_post_thumbnail( $flower_data->ID, [ 100, 100] ) ?></div>
+		<div class="flower-name">
+			<a href="<?= get_the_permalink($flower_data->ID); ?>"><?= $flower_data->post_title; ?> </a>
+			<?php echo $has_parents ? '<span class="flower-slider dashicons dashicons-arrow-down-alt2"></span>' : ""; ?>
+		</div>
+		<div class="flower-end-point"></div>
+		<div class="flower-spacing"></div>
+
+		<?php 
+		if ($has_parents) :
+			echo "<ul class='sub-menu'>";
+			foreach ($parents as $parent) :
+				render_flower_tree_ancestors($parent);
+			endforeach;
+			echo "</ul>";
+		endif;
+		?>
+	</li>
+	<?php
+}
 
 // Activate the plugin and check for ACF plugin
 function pn_plugin_activation() {
