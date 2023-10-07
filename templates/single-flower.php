@@ -70,6 +70,18 @@ if (have_posts()) :
                 ?>
             </div>
 
+            <p><span class="title">Hình ảnh sưu tầm: </span></p>
+            <div class="flower-gallery">
+                <?php 
+                $gallery = get_field("collection_gallery");
+                if ($gallery) {
+                    foreach ($gallery as $image_url ) {
+                        echo "<img width='150px' height='150px' src='{$image_url}'>";
+                    }
+                }
+                ?>
+            </div>
+
             <p style="margin-bottom: 100px;"></p>
 
             <p style="text-align: center"><span class="title">Phả hệ</span></p>

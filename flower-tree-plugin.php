@@ -24,7 +24,21 @@ define( 'FLOWER_TREE_NAME', 'Flower Tree' );
 define( 'FLOWER_TREE_ROOT', plugin_dir_path( __FILE__ ) );
 define( 'FLOWER_TREE_ABSOLUTE', __FILE__ );
 
+// include files
+function include_all_files_in_directory($directory) {
+    $files = glob($directory . '/*.php');
 
+    if ($files !== false) {
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                include_once $file;
+            }
+        }
+    }
+}
+
+$directory_to_include = plugin_dir_path(__FILE__) . 'inc'; 
+include_all_files_in_directory($directory_to_include);
 
 function flower_tree_custom_new_menu() {
 	register_nav_menu('flower-tree-menu',__( 'Flower tree' ));
