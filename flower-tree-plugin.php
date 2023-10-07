@@ -18,11 +18,11 @@ if ( !defined( 'ABSPATH' ) ) {
 	die( 'We\'re sorry, but you can not directly access this file.' );
 }
 
-define( 'PN_VERSION', '1.0' );
-define( 'PN_TEXTDOMAIN', 'flower-tree' );
-define( 'PN_NAME', 'Flower Tree' );
-define( 'PN_PLUGIN_ROOT', plugin_dir_path( __FILE__ ) );
-define( 'PN_PLUGIN_ABSOLUTE', __FILE__ );
+define( 'FLOWER_TREE_VERSION', '1.0' );
+define( 'FLOWER_TREE_TEXTDOMAIN', 'flower-tree' );
+define( 'FLOWER_TREE_NAME', 'Flower Tree' );
+define( 'FLOWER_TREE_ROOT', plugin_dir_path( __FILE__ ) );
+define( 'FLOWER_TREE_ABSOLUTE', __FILE__ );
 
 
 
